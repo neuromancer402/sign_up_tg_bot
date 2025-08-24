@@ -1,0 +1,5 @@
+node_modules
+.env
+BotData/PriceList.json
+clients.db
+roles.json
