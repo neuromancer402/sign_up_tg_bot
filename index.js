@@ -50,6 +50,7 @@ function onload(){
     let usernameList = []
     require("./BotData/roles.json").Masters.forEach(element => {//список мастеров из roles.json
         usernameList.push(element.tg_username);
+        require("./Scripts/dbController").addMaster(element);
     });
     require("./Scripts/dbController").getExclusionListOfMasters(usernameList)//список никнеймов которых нет в roles.json
     .then(result=>{

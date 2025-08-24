@@ -3,14 +3,19 @@ const require = createRequire(import.meta.url);
 
 //возвращает список мастеров
 export const getExclusionListOfMasters = (array) => {
-    let list = "(";
-    array.forEach(element => {
-        list+="\'"+element+"\' "
-    });
-    list+=")";
+    let str = JSON.stringify(array);
+    str = str.substring(1,str.length-1);
     return accessing({
         type:"select",
-        query:`select tg_username from masters WHERE tg_username NOT IN `+list
+        query:`select tg_username from masters WHERE tg_username NOT IN `+"("+str+")"
+    });
+}
+
+export const addMaster = (data) => {
+    return accessing({
+        type:"insert",
+        query:`INSERT OR IGNORE INTO masters (tg_username, name) VALUES (?,?)`,
+        param:[data.tg_username, data.name]
     });
 }
 
@@ -54,7 +59,7 @@ function accessing(data){
             connection.then((db)=>{
                 try{
                     if(data.type === "select"){
-                        let queryResult = makeSelectDB({//выполнение запроса
+                        const queryResult = makeSelectDB({//выполнение запроса
                             DataBase: db,
                             query: data.query,
                             param: data.param
@@ -67,7 +72,11 @@ function accessing(data){
                         });
                     }
                     if(data.type === "insert"){
-                        console.log(id);
+                        const queryResult = runQuery({//выполнение запроса
+                            DataBase: db,
+                            query: data.query,
+                            param: data.param
+                        })
                     }
                     if(data.type === "delete"){
                         try{
@@ -110,6 +119,21 @@ export const createSignUp = (data)=>{
         "insert",
         data.userid
     );
+}
+
+function runQuery(data){
+    return new Promise((resolve, reject)=>{
+        try{
+            data.DataBase.run(data.query, data.param, (err)=>{
+            if(err){
+                reject(err);
+            }
+            resolve();
+        })
+        }catch(e){
+            reject(e)
+        }
+    });
 }
 
 //открыть БД только для чтения
@@ -202,18 +226,3 @@ function createTables(newdb) {
         }
     })
 }
-
-/*insert into hero (hero_id, hero_name, is_xman, was_snapped)
-        values (1, 'Spiderman', 'N', 'Y'),
-               (2, 'Tony Stark', 'N', 'N'),
-               (3, 'Jean Grey', 'Y', 'N');
-
-               
-    insert into hero_power (hero_id, hero_power)
-        values (1, 'Web Slinging'),
-               (1, 'Super Strength'),
-               (1, 'Total Nerd'),
-               (2, 'Total Nerd'),
-               (3, 'Telepathic Manipulation'),
-               (3, 'Astral Projection');
- */
