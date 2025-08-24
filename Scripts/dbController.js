@@ -14,6 +14,14 @@ export const getExclusionListOfMasters = (array) => {
     });
 }
 
+//удалить строку в masters
+export const deleteMaster = (username) =>{
+    return accessing({
+        type:"delete",
+        query:`DELETE FROM masters WHERE tg_username = '${username}'`,
+    });
+}
+
 //добавить строку в таблицу маcтеров
 export const setMaster = (a) => {
     return accessing(
@@ -60,6 +68,17 @@ function accessing(data){
                     }
                     if(data.type === "insert"){
                         console.log(id);
+                    }
+                    if(data.type === "delete"){
+                        try{
+                            const deleteStatement = db.prepare(data.query);
+                            deleteStatement.run();
+                            deleteStatement.finalize();
+                            resolve();
+                        }
+                        catch(e){
+                            reject(e)
+                        }
                     }
                 }
                 catch(e){

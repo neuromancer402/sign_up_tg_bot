@@ -6,7 +6,7 @@ onload();
 const bot = new Telegraf(process.env.TG_TOCKEN)
 bot.start((ctx) => {
     try{
-        const roles = require("./roles.json")
+        const roles = require("./BotData/roles.json")
         if(ctx.message.from.username == roles.admin || ctx.message.from.username == roles.ReserveAdmin){
             //сценарий если бота запустил администратор
             ctx.reply("Привет верховный администратор");
@@ -45,15 +45,16 @@ bot.launch()
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
+//при запуске проверяет соответствие записей roles.js и БД
 function onload(){
     let usernameList = []
-    require("./roles.json").Masters.forEach(element => {//список мастеров из roles.json
+    require("./BotData/roles.json").Masters.forEach(element => {//список мастеров из roles.json
         usernameList.push(element.tg_username);
     });
     require("./Scripts/dbController").getExclusionListOfMasters(usernameList)//список никнеймов которых нет в roles.json
     .then(result=>{
         result.forEach(element=>{
-            console.log(element.tg_username);
+            require("./Scripts/dbController").deleteMaster(element.tg_username)//удаление несовпавших записей
         })
     })
     .catch(err=>{
