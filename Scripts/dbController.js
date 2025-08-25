@@ -19,6 +19,12 @@ export const master = {
         }
     },
     get:{
+        all: async ()=>{
+            return await accessing({
+                type:"select",
+                query:`select * from masters`
+            });
+        },
         allByUsername: async (username)=>{
             return await accessing({
                 type:"select",

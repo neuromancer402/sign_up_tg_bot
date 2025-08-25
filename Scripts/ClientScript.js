@@ -19,8 +19,8 @@ export let start = (ctx, bot) => {
                 Markup.button.callback('Забрать подарок', 'getGiftPriceBtn'),
                 Markup.button.callback('Пропустить', 'getMainPriceBtn')
             ]));
-            giftPriceAction(bot);
-            mainPriceAction(bot);
+            giftPriceAction(bot, ctx);
+            mainPriceAction(bot, ctx);
         }else{
             ctx.reply(require("./getTimeHello").getTimeHello()+ctx.message.from.first_name+'\n\n'+require("../BotData/PriceList.json").data)
         }
@@ -41,8 +41,8 @@ function checkStartNum(username){
     return a;
 }
 
-function giftPriceAction(bot){
-    bot.action('getGiftPriceBtn', (ctx) => {
+function giftPriceAction(bot, ctx){
+    bot.action('getGiftPriceBtn', () => {
         serviceBtnClick(bot, ctx);
         let markupArr = [];
         require("../BotData/PriceList.json").gift.services.forEach(element => {
@@ -61,9 +61,9 @@ function giftPriceAction(bot){
     })
 }
 
-function mainPriceAction(bot){
-    bot.action('getMainPriceBtn', (ctx) => {
-        serviceBtnClick(bot);
+function mainPriceAction(bot, ctx){
+    bot.action('getMainPriceBtn', () => {
+        serviceBtnClick(bot, ctx);
         let markupArr = [];
         require("../BotData/PriceList.json").main.services.forEach(element => {
             markupArr.push([
@@ -110,9 +110,18 @@ function serviceBtnClick(bot, ctx){
         };
         return signUp(a);
     })
-    bot.action('SignUpBtnYes', ()=>{
-        //отправить мастеру запрос на запись
-        
+    bot.action('SignUpBtnYes',async ()=>{
+        //отправить мастерам запрос на запись
+        const masters = await require("./dbController").master.get.all();
+        masters.forEach(element => {
+            if(element.tg_chat_id > 0){
+                bot.telegram.sendMessage(
+                    element.tg_chat_id, 
+                    `[${ctx.message.from.first_name}](tg://user?id=${ctx.message.from.id}) хочет записаться на ${a.title}`,
+                    { parse_mode: 'MarkdownV2'}
+                );
+            }
+        });
     })
 }
 
