@@ -2,20 +2,23 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 function begin (ctx){
-    if(getChatId(ctx) != ctx.message.chat.id){//первый запуск бота
-        require("./dbController").master.set.full({
-            tg_id: ctx.message.from.id,
-            tg_username: ctx.message.from.username,
-            tg_chat_id: ctx.message.chat.id
-        }).then(()=>{
-            ctx.reply(getReport(ctx));
-        })
-        .catch(error=>{
-
-        })
-    }else{
-        ctx.reply(getReport());
-    }
+    require("./dbController").master.set.full({
+        tg_id: ctx.message.from.id,
+        tg_username: ctx.message.from.username,
+        tg_chat_id: ctx.message.chat.id
+    }).then(async ()=>{
+        try{
+            const answer = await getReport(ctx);
+            ctx.reply(answer);
+        }
+        catch(e){
+            throw e;
+        }
+    })
+    .catch(error=>{
+        ctx.reply("В работе бота произошла ошибка, приносим извинения.")
+        console.error(error);
+    })
 }
 export const start = begin;
 
@@ -26,23 +29,12 @@ async function getReport(ctx){
             name = element.name;
         }
     });
-    const list = await require("./dbController").procedure_schedule.get.allActiveByMasterUsername(ctx.message.from.username)
-    //тут обработка списка активных записей
-    return sayHello(name);
-}
-
-//добавить обработчик ошибок
-async function getChatId(ctx){
-    const a = require("./dbController").master.get.allByUsername(ctx.message.from.username);
-    a.then(value=>{
-        if(value.length == 1){
-            return value[0].tg_chat_id;
-        }else{
-            throw "Duplicate row"
-        }
-    }).catch(error=>{
-        throw new Error(error);
-    });
+    const list = await require("./dbController").procedure_schedule.get.allActiveByMasterUsername(ctx.message.from.username);
+    let answer = "На данный момент предстоящих записей нет.";
+    if(list.lenth>0){
+        answer = "Список предстоящих записей:\n"+JSON.stringify(list);
+    }
+    return await sayHello(name)+"\n\n"+answer;
 }
 
 function sayHello(name){

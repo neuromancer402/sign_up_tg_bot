@@ -83,7 +83,7 @@ export const procedure_schedule = {
             const value = await master.get.allByUsername(username);
             return accessing({
                 type:"select",
-                query:`select * from procedure_schedule where "masters_id" = ? AND status = "active"`,
+                query:`select * from procedure_schedule where masters_id = ? AND status = "active"`,
                 param: value[value.length-1].id
             });
         }
@@ -253,7 +253,7 @@ function createTables(newdb) {
 				masters_id INTEGER,
 				is_gift INTEGER NOT NULL DEFAULT 0,
                 status text not null,
-                making_time text not null
+                making_time text not null,
                 FOREIGN KEY (procedures_id) REFERENCES procedures(id),
                 FOREIGN KEY (clients_id) REFERENCES clients(id),
                 FOREIGN KEY (masters_id) REFERENCES masters(id)
