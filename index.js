@@ -46,7 +46,8 @@ bot.launch()
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
-//при запуске проверяет соответствие записей roles.js и БД
+//Синхронизация записей roles.js и БД
+//Синхронизация записей PriceList и БД
 function onload(){
     let usernameList = []
     require("./BotData/roles.json").Masters.forEach(element => {//список мастеров из roles.json
@@ -62,4 +63,20 @@ function onload(){
     .catch(err=>{
         //добавить обработчик ошибок
     })
+    const mainPricelist = require("./BotData/PriceList.json").main.services.forEach(element=>{
+        require("./Scripts/dbController").procedures.set.min({
+            title:element.title,
+            description:element.description,
+            price:element.price,
+            type:"main"
+        })
+    });
+    const giftPricelist = require("./BotData/PriceList.json").gift.services.forEach(element=>{
+        require("./Scripts/dbController").procedures.set.min({
+            title:element.title,
+            description:element.description,
+            price:element.price,
+            type:"gift"
+        })
+    });
 }

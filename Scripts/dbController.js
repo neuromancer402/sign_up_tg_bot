@@ -6,7 +6,7 @@ export const master = {
         min: (data) =>{
             return accessing({
                 type:"insert",
-                query:`INSERT OR IGNORE INTO masters (tg_username, name) VALUES (?,?)`,
+                query:`INSERT OR IGNORE INTO masters (tg_username, name) VALUES (?,?);`,
                 param:[data.tg_username, data.name]
             });
         },
@@ -57,10 +57,35 @@ export const client = {
     }
 }
 
+export const procedures = {
+    get:{},
+    set:{
+        min: async(data)=>{
+            return accessing({
+                type:"insert",
+                query:`INSERT OR IGNORE INTO procedures (title, description, price, type) 
+                VALUES ("${data.title}","${data.description}","${data.price}","${data.type}");`
+            }).then(
+                await accessing({
+                type:"update",
+                query:`UPDATE OR IGNORE procedures SET 
+                description="${data.description}", price="${data.price}", type="${data.type}"
+                WHERE title="${data.title}";`
+            })
+            )
+        }
+    }
+}
+
 export const procedure_schedule = {
     get:{
-        allByMasterUsername: (username)=>{
-            return "test"
+        allActiveByMasterUsername: async (username)=>{
+            const value = await master.get.allByUsername(username);
+            return accessing({
+                type:"select",
+                query:`select * from procedure_schedule where "masters_id" = ? AND status = "active"`,
+                param: value[value.length-1].id
+            });
         }
     }
 }
@@ -215,8 +240,10 @@ function createTables(newdb) {
             
             create table IF NOT EXISTS procedures (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title text not null,
-                making_time text not null
+                title text not null UNIQUE,
+                description text,
+                price text,
+                type text
             );
 
             create table IF NOT EXISTS procedure_schedule (
@@ -226,7 +253,7 @@ function createTables(newdb) {
 				masters_id INTEGER,
 				is_gift INTEGER NOT NULL DEFAULT 0,
                 status text not null,
-                row_create_datetime text not null,
+                making_time text not null
                 FOREIGN KEY (procedures_id) REFERENCES procedures(id),
                 FOREIGN KEY (clients_id) REFERENCES clients(id),
                 FOREIGN KEY (masters_id) REFERENCES masters(id)

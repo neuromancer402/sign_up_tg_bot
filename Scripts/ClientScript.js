@@ -31,7 +31,7 @@ export let start = (ctx, bot) => {
 //возвращает записи из БД о клиенте по никнейму 
 function checkStartNum(username){
     createHandler();
-    const a = dbHandler.client.get.allByUsername(username);
+    const a = dbHandler.client.get.allByUsername(username)
     .then(value=>{
         return value;
     }).catch(error=>{

@@ -19,15 +19,15 @@ function begin (ctx){
 }
 export const start = begin;
 
-function getReport(ctx){
+async function getReport(ctx){
     let name = "";
     require("../BotData/roles.json").Masters.forEach(element => {
         if(element.tg_username == ctx.message.from.username){
             name = element.name;
         }
     });
-    const schedule = require("./dbController").procedure_schedule.get.allByMasterUsername(ctx.message.from.username);
-    console.log(schedule);
+    const list = await require("./dbController").procedure_schedule.get.allActiveByMasterUsername(ctx.message.from.username)
+    //тут обработка списка активных записей
     return sayHello(name);
 }
 
