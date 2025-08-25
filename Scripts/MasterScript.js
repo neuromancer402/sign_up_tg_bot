@@ -1,21 +1,50 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-export let start = (ctx) => {
-    getChatId(ctx);
+function begin (ctx){
+    if(getChatId(ctx) != ctx.message.chat.id){//первый запуск бота
+        require("./dbController").master.set.full({
+            tg_id: ctx.message.from.id,
+            tg_username: ctx.message.from.username,
+            tg_chat_id: ctx.message.chat.id
+        }).then(()=>{
+            ctx.reply(getReport(ctx));
+        })
+        .catch(error=>{
+
+        })
+    }else{
+        ctx.reply(getReport());
+    }
+}
+export const start = begin;
+
+function getReport(ctx){
+    let name = "";
+    require("../BotData/roles.json").Masters.forEach(element => {
+        if(element.tg_username == ctx.message.from.username){
+            name = element.name;
+        }
+    });
+    const schedule = require("./dbController").procedure_schedule.get.allByMasterUsername(ctx.message.from.username);
+    console.log(schedule);
+    return sayHello(name);
 }
 
 //добавить обработчик ошибок
-function getChatId(ctx){
-    const a = require("./dbController").checkMaster(ctx.message.from.id);
+async function getChatId(ctx){
+    const a = require("./dbController").master.get.allByUsername(ctx.message.from.username);
     a.then(value=>{
-        console.log(value);
+        if(value.length == 1){
+            return value[0].tg_chat_id;
+        }else{
+            throw "Duplicate row"
+        }
     }).catch(error=>{
-        console.error(error)
         throw new Error(error);
     });
 }
 
-function sayHello(ctx){
-    return require("./getTimeHello").getTimeHello()+ctx.message.from.first_name
+function sayHello(name){
+    return require("./getTimeHello").getTimeHello()+name
 }

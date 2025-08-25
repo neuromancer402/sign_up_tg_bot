@@ -13,7 +13,7 @@ bot.start((ctx) => {
         }
         else if(isMaster()){
             //сценарий если бота запустил мастер
-            require("./Scripts/MasterScript").start(ctx);
+            require("./Scripts/MasterScript.js").start(ctx);
         }
         else{
             //сценарий если бота запустил клиент
@@ -32,6 +32,7 @@ bot.start((ctx) => {
     }
     catch(error)
     {
+        console.error(error);
         ctx.reply("В работе бота произошла ошибка, приносим свои извенения")
     }
 })
@@ -50,12 +51,12 @@ function onload(){
     let usernameList = []
     require("./BotData/roles.json").Masters.forEach(element => {//список мастеров из roles.json
         usernameList.push(element.tg_username);
-        require("./Scripts/dbController").addMaster(element);
+        require("./Scripts/dbController").master.set.min(element);
     });
-    require("./Scripts/dbController").getExclusionListOfMasters(usernameList)//список никнеймов которых нет в roles.json
+    require("./Scripts/dbController").master.get.exclusionList(usernameList)//список никнеймов которых нет в roles.json
     .then(result=>{
         result.forEach(element=>{
-            require("./Scripts/dbController").deleteMaster(element.tg_username)//удаление несовпавших записей
+            require("./Scripts/dbController").master.delete.byUsername(element.tg_username)//удаление несовпавших записей
         })
     })
     .catch(err=>{

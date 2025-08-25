@@ -1,13 +1,8 @@
-import { time } from 'console';
 import { createRequire} from 'module';
-import { title } from 'process';
 import { Markup } from 'telegraf';
 const require = createRequire(import.meta.url);
 
-let dbHandler = null; //возвращает только результаты запросов в БД
-let userData = {
-    id:null
-}
+let dbHandler = null;
 
 //создать общий обработчик для работы с БД
 function createHandler(){
@@ -16,8 +11,7 @@ function createHandler(){
 
 //Начальный скрипт
 export let start = (ctx, bot) => {
-    userData.id = ctx.message.from.id;
-    const count = checkStartNum(ctx);
+    const count = checkStartNum(ctx.message.from.username);
     count.then(value=>{
         if(value == 0){
             ctx.reply(require("./getTimeHello").getTimeHello()+ctx.message.from.first_name+'\n\n'+require("../BotData/PriceList.json").gift.proposal, 
@@ -34,9 +28,10 @@ export let start = (ctx, bot) => {
 }
 
 //добавить обработчик ошибок
-function checkStartNum(){
+//возвращает записи из БД о клиенте по никнейму 
+function checkStartNum(username){
     createHandler();
-    const a = dbHandler.checkClient(userData.id)
+    const a = dbHandler.client.get.allByUsername(username);
     .then(value=>{
         return value;
     }).catch(error=>{
@@ -118,12 +113,6 @@ function serviceBtnClick(bot, ctx){
     bot.action('SignUpBtnYes', ()=>{
         //отправить мастеру запрос на запись
         
-        /*//создать запись в БД о неподтвержденной записи на услугу
-        dbHandler.createSignUp({
-            userid:userData.id,
-            selectServiceTitle:a.title,
-            selectServiceType:a.type
-        });*/
     })
 }
 

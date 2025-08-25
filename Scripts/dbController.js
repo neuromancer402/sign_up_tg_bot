@@ -1,54 +1,68 @@
 import { createRequire} from 'module';
 const require = createRequire(import.meta.url);
 
-//возвращает список мастеров
-export const getExclusionListOfMasters = (array) => {
-    let str = JSON.stringify(array);
-    str = str.substring(1,str.length-1);
-    return accessing({
-        type:"select",
-        query:`select tg_username from masters WHERE tg_username NOT IN `+"("+str+")"
-    });
+export const master = {
+    set:{
+        min: (data) =>{
+            return accessing({
+                type:"insert",
+                query:`INSERT OR IGNORE INTO masters (tg_username, name) VALUES (?,?)`,
+                param:[data.tg_username, data.name]
+            });
+        },
+        full: (data) =>{
+            return accessing({
+                type:"update",
+                query:`UPDATE masters SET tg_id="${data.tg_id}",tg_chat_id="${data.tg_chat_id}" WHERE tg_username = "${data.tg_username}"`,
+                param:[data.tg_username, data.name]
+            });
+        }
+    },
+    get:{
+        allByUsername: async (username)=>{
+            return await accessing({
+                type:"select",
+                query:`select * from masters where "tg_username" = ?`,
+                param: username
+            });
+        },
+        exclusionList: async (array)=>{//список никнеймов, которых нет в массиве
+            let str = JSON.stringify(array);
+            str = str.substring(1,str.length-1);
+            return accessing({
+                type:"select",
+                query:`select tg_username from masters WHERE tg_username NOT IN `+"("+str+")"
+            });
+        }
+    },
+    delete:{
+        byUsername: async (username) =>{
+            return accessing({
+                type:"delete",
+                query:`DELETE FROM masters WHERE tg_username = '${username}'`,
+            });
+        }
+    }
 }
 
-export const addMaster = (data) => {
-    return accessing({
-        type:"insert",
-        query:`INSERT OR IGNORE INTO masters (tg_username, name) VALUES (?,?)`,
-        param:[data.tg_username, data.name]
-    });
+export const client = {
+    get:{
+        allByUsername: async (username)=>{
+            return await accessing({
+                type:"select",
+                query:`select * from clients where "tg_username" = ?`,
+                param: username
+            });
+        }
+    }
 }
 
-//удалить строку в masters
-export const deleteMaster = (username) =>{
-    return accessing({
-        type:"delete",
-        query:`DELETE FROM masters WHERE tg_username = '${username}'`,
-    });
-}
-
-//добавить строку в таблицу маcтеров
-export const setMaster = (a) => {
-    return accessing(
-        `INSERT INTO masters (tg_username, name) VALUES (a.tg_username, a)`,
-        "insert"
-    )
-}
-
-export const checkClient = (id) =>{
-    return accessing({
-        type:"select",
-        query:`select * from clients where tg_id = ?`,
-        param:id
-    });
-}
-
-export const checkMaster = (id) =>{
-    return accessing({
-        type:"select",
-        query:`select tg_chat_id from masters where tg_id = ?`,
-        param:id
-    }); 
+export const procedure_schedule = {
+    get:{
+        allByMasterUsername: (username)=>{
+            return "test"
+        }
+    }
 }
 
 function accessing(data){
@@ -89,6 +103,17 @@ function accessing(data){
                             reject(e)
                         }
                     }
+                    if(data.type === "update"){
+                        try{
+                            const deleteStatement = db.prepare(data.query);
+                            deleteStatement.run();
+                            deleteStatement.finalize();
+                            resolve();
+                        }
+                        catch(e){
+                            reject(e)
+                        }
+                    }
                 }
                 catch(e){
                     throw e;
@@ -109,16 +134,6 @@ function accessing(data){
             reject(err);
         }
     })
-}
-
-//Создание записи в БД об услуге, на которую решил записаться клиент
-export const createSignUp = (data)=>{
-    console.log(data.userid+"_"+data.selectServiceTitle+"_"+data.selectServiceType)
-    return accessing(
-        `INSERT INTO ...`, 
-        "insert",
-        data.userid
-    );
 }
 
 function runQuery(data){
