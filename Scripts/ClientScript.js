@@ -111,14 +111,33 @@ function serviceBtnClick(bot, ctx){
         return signUp(a);
     })
     bot.action('SignUpBtnYes',async ()=>{
+        const keyboard = Markup.inlineKeyboard([
+            [
+                Markup.button.callback('Подтвердить запись', 'confirmToMaster')
+            ],
+        ]);
+        //создать запись в БД
+        require("./dbController").procedure_schedule.set.waitToConfirm({
+            title:a.title,
+            type:a.type,
+            client:{
+                id:ctx.message.from.id,
+                chat_id:ctx.message.chat.id,
+                name:ctx.message.from.first_name
+            }
+        });
         //отправить мастерам запрос на запись
         const masters = await require("./dbController").master.get.all();
         masters.forEach(element => {
             if(element.tg_chat_id > 0){
+                //кавычки не удалять, нужны для получения подстроки
                 bot.telegram.sendMessage(
                     element.tg_chat_id, 
-                    `[${ctx.message.from.first_name}](tg://user?id=${ctx.message.from.id}) хочет записаться на ${a.title}`,
-                    { parse_mode: 'MarkdownV2'}
+                    `[${ctx.message.from.first_name}](tg://user?id=${ctx.message.from.id}) хочет записаться на «${a.title}»`,
+                    {
+                        parse_mode: 'MarkdownV2',
+                        reply_markup: keyboard.reply_markup
+                    }
                 );
             }
         });

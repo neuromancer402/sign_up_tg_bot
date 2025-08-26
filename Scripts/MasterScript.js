@@ -31,7 +31,8 @@ async function getReport(ctx){
     });
     const list = await require("./dbController").procedure_schedule.get.allActiveByMasterUsername(ctx.message.from.username);
     let answer = "На данный момент предстоящих записей нет.";
-    if(list.lenth>0){
+    
+    if(list != null && list.lenth>0){
         answer = "Список предстоящих записей:\n"+JSON.stringify(list);
     }
     return await sayHello(name)+"\n\n"+answer;

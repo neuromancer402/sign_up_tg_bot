@@ -6,12 +6,13 @@ onload();
 const bot = new Telegraf(process.env.TG_TOCKEN)
 bot.start((ctx) => {
     try{
-        const roles = require("./BotData/roles.json")
-        if(ctx.message.from.username == roles.admin || ctx.message.from.username == roles.ReserveAdmin){
+        const roles = require("./BotData/roles.json");
+        const username = ctx.message.from.username;
+        if(username == roles.admin || username == roles.ReserveAdmin){
             //сценарий если бота запустил администратор
             ctx.reply("Привет верховный администратор");
         }
-        else if(isMaster()){
+        else if(isMaster(roles, username)){
             //сценарий если бота запустил мастер
             require("./Scripts/MasterScript.js").start(ctx);
         }
@@ -19,22 +20,28 @@ bot.start((ctx) => {
             //сценарий если бота запустил клиент
             require("./Scripts/ClientScript").start(ctx, bot);
         }
-
-        function isMaster(){
-            let check = false;
-            roles.Masters.forEach(element=>{
-                if(element.tg_username === ctx.message.from.username){
-                    check = true;
-                }
-            })
-            return check;
-        }
     }
     catch(error)
     {
         console.error(error);
         ctx.reply("В работе бота произошла ошибка, приносим свои извенения")
     }
+})
+
+function isMaster(roles, username){
+    let check = false;
+    roles.Masters.forEach(element=>{
+        if(element.tg_username === username){
+            check = true;
+        }
+    })
+    return check;
+}
+
+//Подтверждение мастером записи
+bot.action('confirmToMaster', (ctx)=>{
+    const string = ctx.text;
+    console.log(string.substring(string.indexOf("«")+1, string.indexOf("»")));
 })
 
 //bot.help((ctx) => ctx.reply('Send me a sticker'))

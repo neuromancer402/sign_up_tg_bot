@@ -87,11 +87,36 @@ export const procedure_schedule = {
     get:{
         allActiveByMasterUsername: async (username)=>{
             const value = await master.get.allByUsername(username);
-            return accessing({
-                type:"select",
-                query:`select * from procedure_schedule where masters_id = ? AND status = "active"`,
-                param: value[value.length-1].id
+            let result = null;
+            if(value.length>0){
+                result = accessing({
+                    type:"select",
+                    query:`select * from procedure_schedule where masters_id = ? AND status = "waitToConfirm"`,
+                    param: value[value.length-1].id
+                });
+            }
+            return result;
+        }
+    },
+    set:{
+        waitToConfirm: async (data)=>{
+            const client_id = await accessing({
+                type:"insert",
+                query: `insert into clients (name,tg_id,tg_chat_id) values (?,?,?) RETURNING id;`,
+                param:[data.client.name, data.client.id, data.client.chat_id]
             });
+            const procedures_id = await accessing({
+                type: "select",
+                query: `select id from procedures where title = ?`,
+                param: data.title
+            })
+            let is_gift = 0;
+            if(data.type = "gift"){is_gift=1;}
+            accessing({
+                type:"insert",
+                query:"INSERT INTO procedure_schedule (procedures_id, clients_id, is_gift, status, making_time) values (?,?,?,?,datetime('now'))",
+                param: [procedures_id[0].id, client_id.id, is_gift, "waitToConfirm"]
+            })
         }
     }
 }
@@ -122,6 +147,11 @@ function accessing(data){
                             query: data.query,
                             param: data.param
                         })
+                        queryResult.then((value)=>{
+                            resolve(value);
+                        }).catch((err)=>{
+                            throw err;
+                        });
                     }
                     if(data.type === "delete"){
                         try{
@@ -170,11 +200,11 @@ function accessing(data){
 function runQuery(data){
     return new Promise((resolve, reject)=>{
         try{
-            data.DataBase.run(data.query, data.param, (err)=>{
+            data.DataBase.get(data.query, data.param, (err, rows)=>{
             if(err){
                 reject(err);
             }
-            resolve();
+            resolve(rows);
         })
         }catch(e){
             reject(e)
