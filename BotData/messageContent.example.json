@@ -6,5 +6,9 @@
             "no":""
         },
         "showMainPriceList":""
+    },
+    "serviceCard":{
+        "yes":"",
+        "no":""
     }
 }

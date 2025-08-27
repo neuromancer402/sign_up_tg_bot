@@ -88,6 +88,12 @@ export function showMainServiceCard(ctx){
     ctx.reply(
         `${service.title}`+
         `\n\n${service.description}`+
-        `\n\nСтоимость: ${service.price} рублей`
+        `\n\nСтоимость: ${service.price} рублей`,
+        Markup.inlineKeyboard([
+            [
+            Markup.button.callback(messageContent.serviceCard.yes, 'createRegistration'),
+            Markup.button.callback(messageContent.serviceCard.no, 'getMainPriceBtn')
+            ],
+        ])
     );
 }
