@@ -1,10 +1,9 @@
 const { Telegraf } = require('telegraf')
 const { message } = require('telegraf/filters')
-
 onload();
 
 const bot = new Telegraf(process.env.TG_TOCKEN)
-bot.start((ctx) => {
+bot.start(async (ctx) => {
     try{
         const roles = require("./BotData/roles.json");
         const username = ctx.message.from.username;
@@ -18,7 +17,9 @@ bot.start((ctx) => {
         }
         else{
             //сценарий если бота запустил клиент
-            require("./Scripts/ClientScript").start(ctx, bot);
+            const startClientScript = require("./Scripts/Client/startClientScript.js");
+            await require("./Scripts/Client/clientActions.js").start(bot, startClientScript);
+            startClientScript.start(ctx);
         }
     }
     catch(error)
@@ -70,7 +71,7 @@ function onload(){
     .catch(err=>{
         //добавить обработчик ошибок
     })
-    const mainPricelist = require("./BotData/PriceList.json").main.services.forEach(element=>{
+    /*const mainPricelist = require("./BotData/PriceList.json").main.services.forEach(element=>{
         require("./Scripts/dbController").procedures.set.min({
             title:element.title,
             description:element.description,
@@ -85,5 +86,5 @@ function onload(){
             price:element.price,
             type:"gift"
         })
-    });
+    });*/
 }

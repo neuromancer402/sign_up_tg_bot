@@ -59,6 +59,29 @@ export const client = {
                 query:`select * from clients where "tg_username" = ?`,
                 param: username
             });
+        },
+        allById: async (id)=>{
+            return await accessing({
+                type:"select",
+                query:`select * from clients where "tg_id" = ?`,
+                param: id
+            });
+        }
+    },
+    set:{
+        firstNameById: async (id, first_name)=>{
+            return await accessing({
+                type:"insert",
+                query:`update clients set first_name=? where tg_id = ?`,
+                param: [first_name, id]
+            })
+        },
+        lastNameById: async (id, last_name)=>{
+            return await accessing({
+                type:"insert",
+                query:`update clients set last_name=? where tg_id = ?`,
+                param: [last_name, id]
+            })
         }
     }
 }
@@ -260,17 +283,17 @@ function createTables(newdb) {
             const a = newdb.exec(`
             create table IF NOT EXISTS masters (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tg_id text,
+                tg_id INTEGER UNIQUE,
                 tg_username text UNIQUE,
-                tg_chat_id text,
+                tg_chat_id INTEGER,
                 name text not null
             );
 
             create table IF NOT EXISTS clients (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name text not null,
-                tg_id text not null,
-                tg_chat_id text,
+                first_name text,
+                last_name text,
+                tg_id INTEGER UNIQUE,
                 phone_num text
             );
             

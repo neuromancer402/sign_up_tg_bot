@@ -3,3 +3,4 @@ node_modules
 BotData/PriceList.json
 clients.db
 roles.json
+messageContent.json

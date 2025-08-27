@@ -1,23 +1,26 @@
 {
-    "main":{
-        "data":"Это основной прайс",
-        "services":[
-            {
-                "title":"Услуга 1",
-                "description":"Опсание услуги 1",
-                "price":1000
-            }
-        ]
-    },
-    "gift":{
-        "proposal":"вам как новому клиенту доступен подарок",
-        "data":"Это подарочный прайс",
-        "services":[
-            {
-                "title":"Услуга 1 по скидке",
-                "description":"Опсание услуги 1 по скидке",
-                "price":1000
-            }
-        ]
-    } 
+    "priceListTitle":"",
+    "firstVisitTitle":"",
+    "firstVisitPrewiew":"",
+    "mainTitle":"",
+    "mainPrewiew":"",
+    "services":[
+        {
+            "id":1,
+            "title":"",
+            "additionalTitle":"",
+            "description":"",
+            "price":1000,
+            "discountPrice":100,
+            "firstVisitDiscount":true
+        },
+        {
+            "id":2,
+            "title":"",
+            "additionalTitle":"",
+            "description":"",
+            "price":1000,
+            "firstVisitDiscount":false
+        }
+    ] 
 }

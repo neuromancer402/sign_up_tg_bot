@@ -1,0 +1,10 @@
+{
+    "firstVisitData":{
+        "firstVisitPrewiewText":"",
+        "firstVisitPrewiewButtonsText":{
+            "yes":"",
+            "no":""
+        },
+        "showMainPriceList":""
+    }
+}
