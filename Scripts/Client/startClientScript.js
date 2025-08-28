@@ -141,7 +141,6 @@ export async function createRegistration(ctx){
     const procedure = await require("../../Scripts/dbController").procedures.get.allByProcedureId(procedure_id);
     masters.forEach(element => {
         if(element.tg_chat_id > 0){
-            //кавычки не удалять, нужны для получения подстроки
             bot.telegram.sendMessage(
                 element.tg_chat_id, 
                 `[${ctx.update.callback_query.from.first_name}](tg://user?id=${ctx.update.callback_query.from.id}) хочет записаться на «${procedure[0].title}»`,

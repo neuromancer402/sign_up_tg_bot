@@ -94,6 +94,12 @@ export const procedures = {
                 query:`select * from procedures where procedure_id = ?;`,
                 param:procedure_id
             })
+        },
+        all:()=>{
+            return accessing({
+                type:"select",
+                query:`select * from procedures;`
+            })
         }
     },
     set:{
@@ -118,13 +124,37 @@ export const procedures = {
 
 export const procedure_schedule = {
     get:{
+        allUnconfirmed: async ()=>{
+            const listPS = await accessing({
+                type:"select",
+                query:`select * from procedure_schedule where status = "waitToConfirm"`
+            })
+            let clientsId =[];
+
+            for(let i in listPS){
+                if(!(clientsId.includes(listPS[i].clients_id))){
+                    clientsId.push(listPS[i].clients_id)
+                }
+            }
+
+            let clients = [];
+            for(let i in clientsId){
+                const client = await accessing({
+                    type:"select",
+                    query:`select * from clients where id = ?`,
+                    param:clientsId[i]
+                })
+                clients.push(client[0]);
+            }
+            return {listPS:listPS,clients:clients};
+        },
         allActiveByMasterUsername: async (username)=>{
             const value = await master.get.allByUsername(username);
             let result = null;
             if(value.length>0){
                 result = accessing({
                     type:"select",
-                    query:`select * from procedure_schedule where masters_id = ? AND status = "waitToConfirm"`,
+                    query:`select * from procedure_schedule where masters_id = ? AND status = "notComplete"`,
                     param: value[value.length-1].id
                 });
             }
