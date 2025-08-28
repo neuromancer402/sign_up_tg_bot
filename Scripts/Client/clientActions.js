@@ -9,6 +9,12 @@ export function start(bot, clientScript){
         clientScript.showMainServiceCard(ctx);
     })
     bot.action(/giftServiceBtn+/, ctx=>{
-        ctx.reply("boba")
+        clientScript.showMainServiceCard(ctx);
+    })
+    bot.action(/giftCreateRegistration+/, ctx=>{
+        clientScript.createRegistration(ctx);
+    })
+    bot.action(/mainCreateRegistration+/, ctx=>{
+        clientScript.createRegistration(ctx);
     })
 }
