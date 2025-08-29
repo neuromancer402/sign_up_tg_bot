@@ -1,7 +1,9 @@
 import { createRequire } from 'module';
+import { Markup } from 'telegraf';
+
 const require = createRequire(import.meta.url);
-const dbController = require("./dbController");
-const messageContent = require("../BotData/messageContent.json");
+const dbController = require("../dbController");
+const messageContent = require("../../BotData/messageContent.json");
 
 
 function begin (ctx){
@@ -12,11 +14,12 @@ function begin (ctx){
     }).then(async ()=>{
         try{
             ctx.reply(await getCurrentRecords(ctx));
-            ctx.reply(await getUnconfirmedRegistration(ctx),
-                {
-                    parse_mode: 'MarkdownV2'
-                }
-            );
+            ctx.replyWithMarkdownV2(await getUnconfirmedRegistration(),
+            Markup.inlineKeyboard([
+                [
+                Markup.button.callback(messageContent.master.confirmRegistration, 'showChooseConfirmRegistrationMsg')
+                ],
+            ]));
         }
         catch(e){
             throw e;
@@ -32,7 +35,7 @@ export const start = begin;
 //сообщение с текущими записями
 async function getCurrentRecords(ctx){
     let name = "";
-    require("../BotData/roles.json").Masters.forEach(element => {
+    require("../../BotData/roles.json").Masters.forEach(element => {
         if(element.tg_username == ctx.message.from.username){
             name = element.name;
         }
@@ -47,10 +50,12 @@ async function getCurrentRecords(ctx){
 }
 
 function sayHello(name){
-    return require("./getTimeHello").getTimeHello()+name
+    return require("../getTimeHello").getTimeHello()+name
 }
 
-async function getUnconfirmedRegistration(ctx){
+let unconfirmedRegistrNum = 0;
+
+async function getUnconfirmedRegistration(){
     const list = await dbController.procedure_schedule.get.allUnconfirmed();
     let answer = messageContent.master.haveRegistration+"\n";
     const procedures = await dbController.procedures.get.all();
@@ -67,5 +72,21 @@ async function getUnconfirmedRegistration(ctx){
             }
         }
     });
+    unconfirmedRegistrNum = num;
     return answer;
+}
+
+export function showChooseConfirmRegistrationMsg(ctx){
+    let array = []
+    for(let i=1;i<= unconfirmedRegistrNum;i++){
+        let s = [];
+        for(let j=0;j<5;j++){
+            if(i<= unconfirmedRegistrNum){
+                s.push(i.toString());
+                i++;
+            }
+        }
+        array.push(s);
+    }
+    ctx.reply("Выбор записи", Markup.keyboard(array).oneTime());
 }

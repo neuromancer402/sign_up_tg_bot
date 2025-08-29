@@ -111,7 +111,7 @@ export function showMainServiceCard(ctx){
                 [
                 Markup.button.callback(messageContent.serviceCard.giftYes, 'mainCreateRegistration'+id),
                 Markup.button.callback(messageContent.serviceCard.giftNo, 'getGiftPriceBtn')
-                ],
+                ]
             ])
         );
     }

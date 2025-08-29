@@ -14,7 +14,9 @@ bot.start(async (ctx) => {
         }
         else if(isMaster(roles, username)){
             //сценарий если бота запустил мастер
-            require("./Scripts/MasterScript.js").start(ctx);
+            const startMasterScript = require("./Scripts/Master/MasterScript.js");
+            await require("./Scripts/Master/masterActions.js").start(bot, startMasterScript);
+            startMasterScript.start(ctx, bot);
         }
         else{
             //сценарий если бота запустил клиент
