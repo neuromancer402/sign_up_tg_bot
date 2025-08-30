@@ -146,7 +146,8 @@ export const procedure_schedule = {
                 })
                 clients.push(client[0]);
             }
-            return {listPS:listPS,clients:clients};
+            const allprocedures = await procedures.get.all();
+            return {listPS:listPS,clients:clients, procedures:allprocedures};
         },
         allActiveByMasterUsername: async (username)=>{
             const value = await master.get.allByUsername(username);

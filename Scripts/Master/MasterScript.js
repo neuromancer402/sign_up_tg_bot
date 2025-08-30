@@ -1,5 +1,6 @@
 import { createRequire } from 'module';
 import { Markup } from 'telegraf';
+import { message } from 'telegraf/filters';
 
 const require = createRequire(import.meta.url);
 const dbController = require("../dbController");
@@ -18,7 +19,7 @@ function begin (ctx){
             Markup.inlineKeyboard([
                 [
                 Markup.button.callback(messageContent.master.confirmRegistration, 'showChooseConfirmRegistrationMsg')
-                ],
+                ]
             ]));
         }
         catch(e){
@@ -54,9 +55,11 @@ function sayHello(name){
 }
 
 let unconfirmedRegistrNum = 0;
+let clientsAndRegistrList = {};
 
 async function getUnconfirmedRegistration(){
     const list = await dbController.procedure_schedule.get.allUnconfirmed();
+    clientsAndRegistrList = list;
     let answer = messageContent.master.haveRegistration+"\n";
     const procedures = await dbController.procedures.get.all();
     let num=0;
@@ -76,7 +79,7 @@ async function getUnconfirmedRegistration(){
     return answer;
 }
 
-export function showChooseConfirmRegistrationMsg(ctx){
+export function showChooseConfirmRegistrationMsg(bot, ctx){
     let array = []
     for(let i=1;i<= unconfirmedRegistrNum;i++){
         let s = [];
@@ -89,4 +92,35 @@ export function showChooseConfirmRegistrationMsg(ctx){
         array.push(s);
     }
     ctx.reply("Выбор записи", Markup.keyboard(array).oneTime());
+    bot.on('message', (ctx) => {
+        if(!isNaN(ctx.message.text)){
+            if(ctx.message.text > 0 && ctx.message.text < unconfirmedRegistrNum){
+                for(let i in clientsAndRegistrList.clients){
+                    if(clientsAndRegistrList.clients[i].id == clientsAndRegistrList.listPS[ctx.message.text-1].clients_id){
+                        ctx.reply(clientsAndRegistrList.clients[i].last_name);
+                        for(let j in clientsAndRegistrList.procedures){
+                            if(clientsAndRegistrList.procedures[j].id == clientsAndRegistrList.listPS[ctx.message.text-1].procedures_id){
+                                let isGift = "Нет";
+                                if(clientsAndRegistrList.listPS[ctx.message.text-1].is_gift === 1){
+                                    isGift = "Да";
+                                }
+                                ctx.replyWithMarkdownV2(
+                                    `Клиент: [${clientsAndRegistrList.clients[i].first_name} ${clientsAndRegistrList.clients[i].last_name}](tg://user?id=${clientsAndRegistrList.clients[i].tg_id})`+
+                                    `\nПроцедура: ${clientsAndRegistrList.procedures[j].title}`+
+                                    `\nСкидка первого посещения: ${isGift}`+
+                                    `\nВремя записи: `,
+                                    Markup.inlineKeyboard([
+                                        Markup.button.callback(messageContent.master.confirm, 'confirmRegistration'),
+                                        Markup.button.callback(messageContent.master.editTime, 'editTimeRegistration')
+                                    ])
+                                );
+                            }
+                        }
+                    }
+                }
+            }else{
+                ctx.reply("Число вне диапазона");
+            }
+        }
+    })
 }
