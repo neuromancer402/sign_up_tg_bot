@@ -167,25 +167,33 @@ export const procedure_schedule = {
             await accessing({
                 type:"insert",
                 query: `insert OR IGNORE into clients (first_name, last_name, tg_id, tg_chat_id) values (?,?,?,?);`,
-                param:[data.client.first_name, data.client.first_name, data.client.id, data.client.chat_id]
+                param:[data.client.first_name, data.client.last_name, data.client.id, data.client.chat_id]
             });
             const client_id = await accessing({
                 type: "select",
                 query: `select id from clients where tg_id = ?`,
                 param: data.client.id
-            })
+            });
             const procedures_id = await accessing({
                 type: "select",
                 query: `select id from procedures where procedure_id = ?`,
                 param: data.procedure_id
-            })
-            let is_gift = 0;
-            if(data.type = "gift"){is_gift=1;}
-            await accessing({
-                type:"insert",
-                query:"INSERT INTO procedure_schedule (procedures_id, clients_id, is_gift, status, making_time) values (?,?,?,?,datetime('now'))",
-                param: [procedures_id[0].id, client_id[0].id, is_gift, "waitToConfirm"]
-            })
+            });
+            
+            const check = await accessing({
+                type:"select",
+                query: `select * from procedure_schedule where procedures_id = ? and clients_id=? and status="waitToConfirm";`,
+                param:[procedures_id[0].id, client_id[0].id]
+            });
+            if(check.length == 0){
+                let is_gift = 0;
+                if(data.type = "gift"){is_gift=1;}
+                await accessing({
+                    type:"insert",
+                    query:"INSERT INTO procedure_schedule (procedures_id, clients_id, is_gift, status, making_time) values (?,?,?,?,datetime('now'))",
+                    param: [procedures_id[0].id, client_id[0].id, is_gift, "waitToConfirm"]
+                })
+            }
         }
     }
 }

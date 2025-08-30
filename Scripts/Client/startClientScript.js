@@ -151,4 +151,5 @@ export async function createRegistration(ctx){
             );
         }
     });
+    ctx.reply(messageContent.client.registrationDone);
 }
