@@ -155,8 +155,7 @@ export async function createRegistration(ctx) {
     ctx.reply(messageContent.client.registrationDone);
 }
 
-
-//отобразить ссобщение выбора даты
+//отобразить сообщение выбора даты
 //id - идентификатор процедуры для передачи в createRegistration
 //type - тип скидки процедуры для передачи в createRegistration
 export function chooseDate(ctx, id, type) {
@@ -169,8 +168,8 @@ export function chooseDate(ctx, id, type) {
         reply_markup: buttons,
     });
 
-    bot.on("callback_query", async (msg, match) => {
-        const data = msg.update.callback_query.data;
+    bot.on("callback_query", async (ctx, match) => {
+        const data = ctx.update.callback_query.data;
         if (data.includes("month_next")) {
             const newDate = new Date();
 
@@ -185,12 +184,11 @@ export function chooseDate(ctx, id, type) {
         }
         if (data.includes(".day_calendar")) {
             const date = data.replace(/\..*$/, "");
-
             ctx.reply("Выбранная дата: " + date,
                 Markup.inlineKeyboard([
                     [
                         Markup.button.callback("Верно", type+'CreateRegistration'+id),
-                        Markup.button.callback("Изменить", 'chooseDate')
+                        Markup.button.callback("Изменить", 'chooseDate'+type+id)
                     ]
                 ]),
             );
