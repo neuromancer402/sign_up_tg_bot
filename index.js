@@ -10,7 +10,7 @@ bot.start(async (ctx) => {
     try{
         const roles = require("./BotData/roles.json");
         const username = ctx.message.from.username;
-        if(username == roles.admin || username == roles.ReserveAdmin){
+        if(ctx.message.from.id == process.env.ADMIN_TG_ID){
             //сценарий если бота запустил администратор
             ctx.reply("Привет верховный администратор");
         }
@@ -29,8 +29,8 @@ bot.start(async (ctx) => {
     }
     catch(error)
     {
-        console.error(error);
-        ctx.reply("В работе бота произошла ошибка, приносим свои извенения")
+        ctx.reply("В работе бота произошла ошибка, приносим свои ивинения.\nПопробуйте перезапустить бот, вдруг это поможет (заново отправьте /start)")
+        new botError(error);
     }
 })
 
@@ -43,12 +43,6 @@ function isMaster(roles, username){
     })
     return check;
 }
-
-//Подтверждение мастером записи
-bot.action('confirmToMaster', (ctx)=>{
-    const string = ctx.text;
-    console.log(string.substring(string.indexOf("«")+1, string.indexOf("»")));
-})
 
 //bot.help((ctx) => ctx.reply('Send me a sticker'))
 bot.on(message('sticker'), (ctx) => ctx.reply('👍'))

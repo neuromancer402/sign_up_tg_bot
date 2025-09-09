@@ -11,8 +11,8 @@ async function onload(){
     if(process.env.DB_NAME == 0){
         throw new Error("DB_NAME in .env file is empty");
     }
-    if(process.env.ADMIN_TG_CHAT_ID == 0){
-        throw new Error("ADMIN_TG_CHAT_ID in .env file is empty");
+    if(process.env.ADMIN_TG_ID == 0){
+        throw new Error("ADMIN_TG_ID in .env file is empty");
     }
 
     await synchronize();
