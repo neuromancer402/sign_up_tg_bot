@@ -1,15 +1,18 @@
 class botError extends Error{
-    constructor(code, status, ...params){
+    constructor(code, ctx, ...params){
         super(...params);
-        this.code = code
-        this.status = status
+        this.code = code;
+        this.ctx = ctx;
 
         if (Error.captureStackTrace) {
-            console.log("a")
             Error.captureStackTrace(this, botError)
         }
         
-        this.reportToAdmin()
+        this.reportToAdmin();
+        if(this.ctx > 0){
+            ctx.reply("В работе бота произошла ошибка, приносим свои ивинения.\nПопробуйте перезапустить бот, вдруг это поможет (заново отправьте /start)");
+        }
+        console.log(code);
     }
     reportToAdmin(){
         const { Telegraf } = require('telegraf');
@@ -21,5 +24,4 @@ class botError extends Error{
         );
     }
 }
-
 module.exports = botError;

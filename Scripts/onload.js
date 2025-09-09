@@ -1,6 +1,8 @@
 const roles = require("../BotData/roles.json");
-const dbController = require("./dbController.js");
+const masterHandler = require("./Database/mastersHandler.js")
 const priceList = require("../BotData/PriceList.json");
+const proceduresHandler = require("./Database/proceduresHandler.js");
+const botError = require("./ErrorControler.js");
 
 async function onload(){
     console.log("Проверка ...");
@@ -15,37 +17,45 @@ async function onload(){
         throw new Error("ADMIN_TG_ID in .env file is empty");
     }
 
-    await synchronize();
-    console.log("Проверка выполнена, бот работает");
+    try{
+        await synchronize();
+        console.log("Проверка выполнена, бот работает");
+    }catch(e){
+        throw new Error(e)
+    }
 }
 
 //Синхронизация записей roles.js и БД
 //Синхронизация записей PriceList и БД
 async function synchronize(){
     let usernameList = []
-    roles.Masters.forEach(element => {//список мастеров из roles.json
-        usernameList.push(element.tg_username);
-        dbController.master.set.min(element);
-    });
-    const list = await dbController.master.get.exclusionList(usernameList)//список никнеймов которых нет в roles.json
-    
-    for(let i in list){
-        dbController.master.delete.byUsername(list[i].tg_username)//удаление несовпавших записей
-    }
-
-    for(let i in priceList.services){
-        const element = priceList.services[i]
-        let t = "main";
-        if(element.firstVisitDiscount){
-            t = "gift";
+    try{
+        for(let i in roles.Masters){//список мастеров из roles.json
+            usernameList.push(roles.Masters[i].tg_username);
+            await masterHandler.set.min(roles.Masters[i]);
         }
-        await dbController.procedures.set.min({
-            title:element.title,
-            description:element.description,
-            price:element.price,
-            type:t,
-            procedure_id:element.id
-        })
+
+        const list = await masterHandler.get.exclusionList(usernameList)//список никнеймов которых нет в roles.json
+        for(let i in list){
+            await masterHandler.delete.byUsername(list[i].tg_username)//удаление несовпавших записей
+        }
+
+        for(let i in priceList.services){
+            const element = priceList.services[i]
+            let t = "main";
+            if(element.firstVisitDiscount){
+                t = "gift";
+            }
+            await proceduresHandler.set.min({
+                title:element.title,
+                description:element.description,
+                price:element.price,
+                type:t,
+                procedure_id:element.id
+            })
+        }
+    }catch(e){
+        throw e;
     }
 }
 

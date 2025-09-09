@@ -286,15 +286,6 @@ function runQuery(data){
     });
 }
 
-//открыть БД только для чтения
-function readConnectDB(sqlite3){
-    return new Promise((resolve, reject)=>{
-        const dbase = new sqlite3.Database('./'+process.env.DB_NAME, sqlite3.OPEN_READ, (err) => {
-            reject(err);
-        });
-        resolve(dbase);
-    })
-}
 
 //открыть БД для чтения и записи
 function readWriteConnectDB(sqlite3){

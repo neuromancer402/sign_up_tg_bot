@@ -2,35 +2,34 @@ import { createRequire } from 'module';
 import { Markup } from 'telegraf';
 
 const require = createRequire(import.meta.url);
-const dbController = require("../dbController");
-const messageContent = require("../../BotData/messageContent.json");
+const dbController = require('../dbController');
+const messageContent = require('../../BotData/messageContent.json');
+const botError = require('../ErrorControler');
+const masterHandler = require('../Database/mastersHandler');
 
-
-function begin(ctx) {
+export function master(ctx) {
+    masterHandler.set.full({
+        tg_id: ctx.message.from.id,
+        tg_username: ctx.message.from.username,
+        tg_chat_id: ctx.message.chat.id
+    })
     dbController.master.set.full({
         tg_id: ctx.message.from.id,
         tg_username: ctx.message.from.username,
         tg_chat_id: ctx.message.chat.id
     }).then(async () => {
-        try {
-            ctx.reply(await getCurrentRecords(ctx));
-            ctx.replyWithMarkdownV2(await getUnconfirmedRegistration(),
-                Markup.inlineKeyboard([
-                    [
-                        Markup.button.callback(messageContent.master.confirmRegistration, 'showChooseConfirmRegistrationMsg')
-                    ]
-                ]));
-        }
-        catch (e) {
-            throw e;
-        }
+        ctx.reply(await getCurrentRecords(ctx));
+        ctx.replyWithMarkdownV2(await getUnconfirmedRegistration(),
+            Markup.inlineKeyboard([
+                [
+                    Markup.button.callback(messageContent.master.confirmRegistration, 'showChooseConfirmRegistrationMsg')
+                ]
+            ])
+        );
+    }).catch(error => {
+        throw new botError(error, ctx);
     })
-        .catch(error => {
-            ctx.reply("В работе бота произошла ошибка, приносим извинения.")
-            console.error(error);
-        })
 }
-export const start = begin;
 
 //сообщение с текущими записями
 async function getCurrentRecords(ctx) {

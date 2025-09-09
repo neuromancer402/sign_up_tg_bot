@@ -7,7 +7,7 @@ onload();
 
 const bot = new Telegraf(process.env.TG_TOCKEN)
 bot.start(async (ctx) => {
-    try{
+    try{        
         const roles = require("./BotData/roles.json");
         const username = ctx.message.from.username;
         if(ctx.message.from.id == process.env.ADMIN_TG_ID){
@@ -15,10 +15,11 @@ bot.start(async (ctx) => {
             ctx.reply("Привет верховный администратор");
         }
         else if(isMaster(roles, username)){
+            const master = require('./Scripts/Master/MasterScript.js')
             //сценарий если бота запустил мастер
             const startMasterScript = require("./Scripts/Master/MasterScript.js");
             await require("./Scripts/Master/masterActions.js").start(bot, startMasterScript);
-            startMasterScript.start(ctx, bot);
+            startMasterScript.master(ctx, bot);
         }
         else{
             //сценарий если бота запустил клиент
@@ -29,8 +30,7 @@ bot.start(async (ctx) => {
     }
     catch(error)
     {
-        ctx.reply("В работе бота произошла ошибка, приносим свои ивинения.\nПопробуйте перезапустить бот, вдруг это поможет (заново отправьте /start)")
-        new botError(error);
+        new botError(error, ctx);
     }
 })
 
