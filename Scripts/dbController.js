@@ -35,7 +35,7 @@ export const master = {
         exclusionList: async (array)=>{//список никнеймов, которых нет в массиве
             let str = JSON.stringify(array);
             str = str.substring(1,str.length-1);
-            return accessing({
+            return await accessing({
                 type:"select",
                 query:`select tg_username from masters WHERE tg_username NOT IN `+"("+str+")"
             });
@@ -104,20 +104,17 @@ export const procedures = {
     },
     set:{
         min: async(data)=>{
-            return accessing({
+            await accessing({
                 type:"insert",
-                query:`INSERT OR IGNORE INTO procedures (title, procedure_id, description, price, type) 
-                VALUES (?,?,?,?,?);`,
+                query:`INSERT OR IGNORE INTO procedures (title, procedure_id, description, price, type) VALUES (?,?,?,?,?);`,
                 param:[data.title, data.procedure_id, data.description, data.price, data.type]
-            }).then(
-                await accessing({
+            })
+            await accessing({
                 type:"update",
-                query:`UPDATE OR IGNORE procedures SET 
-                description=?, price=?, type=?, title=?
-                WHERE procedure_id = ?;`,
+                query:`UPDATE OR IGNORE procedures SET description=?, price=?, type=?, title=? WHERE procedure_id = ?;`,
                 param:[data.description, data.price, data.type, data.title, data.procedure_id]
             })
-            )
+            return true;
         }
     }
 }

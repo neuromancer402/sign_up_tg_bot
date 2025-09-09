@@ -1,5 +1,7 @@
-const { Telegraf } = require('telegraf')
-const { message } = require('telegraf/filters')
+const { Telegraf } = require('telegraf');
+const { message } = require('telegraf/filters');
+const botError = require('./Scripts/ErrorControler.js');
+const onload = require('./Scripts/onload.js');
 
 onload();
 
@@ -56,40 +58,3 @@ bot.launch()
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
-
-//Синхронизация записей roles.js и БД
-//Синхронизация записей PriceList и БД
-function onload(){
-    let usernameList = []
-    require("./BotData/roles.json").Masters.forEach(element => {//список мастеров из roles.json
-        usernameList.push(element.tg_username);
-        require("./Scripts/dbController").master.set.min(element);
-    });
-    require("./Scripts/dbController").master.get.exclusionList(usernameList)//список никнеймов которых нет в roles.json
-    .then(result=>{
-        result.forEach(element=>{
-            require("./Scripts/dbController").master.delete.byUsername(element.tg_username)//удаление несовпавших записей
-        })
-    })
-    .catch(err=>{
-        //добавить обработчик ошибок
-    })
-    const mainPricelist = require("./BotData/PriceList.json").services.forEach(element=>{
-        require("./Scripts/dbController.js").procedures.set.min({
-            title:element.title,
-            description:element.description,
-            price:element.price,
-            type:"main",
-            procedure_id:element.id
-        })
-    });
-    const giftPricelist = require("./BotData/PriceList.json").services.forEach(element=>{
-        require("./Scripts/dbController").procedures.set.min({
-            title:element.title,
-            description:element.description,
-            price:element.price,
-            type:"gift",
-            procedure_id:element.id
-        })
-    });
-}
