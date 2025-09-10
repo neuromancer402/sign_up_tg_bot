@@ -1,12 +1,18 @@
 import { createRequire } from 'module';
 import { Markup } from 'telegraf';
+
 const require = createRequire(import.meta.url);
 const messageContent = require("../../BotData/messageContent.json");
+const clientsHandler = require("../Database/clientsHandler");
+const procShedHandler = require("../Database/procShedHandler");
+const priceList = require("../../BotData/PriceList.json");
+const proceduresHandler = require('../Database/proceduresHandler');
+const mastersHandler = require('../Database/mastersHandler');
 let bot;
 
 export let start = async (ctx, bt) => {
     bot = bt;
-    const client = await require("../dbController").client.get.allById(ctx.message.from.id);
+    const client = await clientsHandler.get.allById(ctx.message.from.id);
     if (client.length == 0) {
         ctx.reply(
             require("../getTimeHello").getTimeHello() + `${ctx.message.from.first_name}\n` +
@@ -21,10 +27,10 @@ export let start = async (ctx, bt) => {
         //если совпал id то проверить не изменились ли имя фамилия
         // если изменились - перезаписать
         if (client.first_name != ctx.message.from.first_name) {
-            await require("../dbController").client.set.firstNameById(ctx.message.from.id, ctx.message.from.first_name);
+            await clientsHandler.set.firstNameById(ctx.message.from.id, ctx.message.from.first_name);
         }
         if (client.last_name != ctx.message.from.last_name) {
-            await require("../dbController").client.set.lastNameById(ctx.message.from.id, ctx.message.from.last_name);
+            await clientsHandler.set.lastNameById(ctx.message.from.id, ctx.message.from.last_name);
         }
         getMainPriceBtnClick(ctx);
     }
@@ -33,8 +39,6 @@ export let start = async (ctx, bt) => {
 //показать прайс услуг по скидке первого посещения
 export function getGiftPriceBtnClick(ctx) {
     let markupArr = [];
-    const priceList = require("../../BotData/PriceList.json");
-    const messageContent = require("../../BotData/messageContent.json");
     priceList.services.forEach(element => {
         if (element.firstVisitDiscount) {
             markupArr.push([
@@ -60,8 +64,6 @@ export function getGiftPriceBtnClick(ctx) {
 //показать основной прайс
 export function getMainPriceBtnClick(ctx) {
     let markupArr = [];
-    const priceList = require("../../BotData/PriceList.json");
-    const messageContent = require("../../BotData/messageContent.json");
     priceList.services.forEach(element => {
         markupArr.push([
             Markup.button.callback(
@@ -82,7 +84,7 @@ export function showMainServiceCard(ctx) {
     //подстрока без mainServiceBtn - id услуги
     const id = btnName.substring(14);
     let service = null;
-    const arr = require("../../BotData/PriceList.json").services;
+    const arr = priceList.services;
     for (let key in arr) {
         if (arr[key].id == id) {
             service = arr[key];
@@ -122,7 +124,7 @@ export async function createRegistration(ctx) {
     const procedure_id = ctx.update.callback_query.data.substring(22);
 
     //создать запись в БД
-    await require("../../Scripts/dbController").procedure_schedule.set.waitToConfirm({
+    await procShedHandler.set.waitToConfirm({
         procedure_id: procedure_id,
         type: type,
         client: {
@@ -138,8 +140,8 @@ export async function createRegistration(ctx) {
             Markup.button.callback('Подтвердить запись', 'confirmToMaster')
         ],
     ]);
-    const masters = await require("../../Scripts/dbController").master.get.all();
-    const procedure = await require("../../Scripts/dbController").procedures.get.allByProcedureId(procedure_id);
+    const masters = await mastersHandler.get.all();
+    const procedure = await proceduresHandler.get.allByProcedureId(procedure_id);
     masters.forEach(element => {
         if (element.tg_chat_id > 0) {
             bot.telegram.sendMessage(
