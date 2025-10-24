@@ -12,7 +12,7 @@ bot.start(async (ctx) => {
         const username = ctx.message.from.username;
         if(ctx.message.from.id == process.env.ADMIN_TG_ID){
             //сценарий если бота запустил администратор
-            ctx.reply("Привет верховный администратор");
+            ctx.reply("Привет администратор");
         }
         else if(isMaster(roles, username)){
             const master = require('./Scripts/Master/MasterScript.js')
