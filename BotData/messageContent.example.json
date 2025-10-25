@@ -8,7 +8,19 @@
         "showMainPriceList":""
     },
     "serviceCard":{
-        "yes":"",
-        "no":""
+        "mainYes":"",
+        "mainNo":"",
+        "giftYes":"",
+        "giftNo":""
+    },
+    "master":{
+        "noRegistration":"",
+        "haveRegistration":"",
+        "confirmRegistration":"",
+        "confirm":"",
+        "editTime":""
+    },
+    "client":{
+        "registrationDone":""
     }
 }

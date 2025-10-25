@@ -19,7 +19,7 @@ async function onload(){
 
     try{
         await synchronize();
-        console.log("Проверка выполнена, бот работает");
+        console.log("Проверка выполнена, бот запущен");
     }catch(e){
         throw new Error(e)
     }

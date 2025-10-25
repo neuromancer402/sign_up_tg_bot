@@ -1,7 +1,9 @@
 {
-    "admin":"",
-    "ReserveAdmin":"",
     "Masters":[
+        {
+            "tg_username":"",
+            "name":""
+        },
         {
             "tg_username":"",
             "name":""
